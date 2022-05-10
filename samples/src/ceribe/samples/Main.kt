@@ -1,3 +1,8 @@
+package ceribe.samples
+
+import ceribe.distributed_monitor.DistributedMonitor
+import ceribe.distributed_monitor.State
+
 class IntListState : State() {
     val values = mutableListOf<Int>()
     override fun serialize(): String {
@@ -9,7 +14,7 @@ class IntListState : State() {
     }
 }
 
-fun main() {
+fun main(args: Array<String>) {
     val state = IntListState()
     val monitor = DistributedMonitor(state)
 
@@ -20,4 +25,3 @@ fun main() {
         }
     }
 }
-

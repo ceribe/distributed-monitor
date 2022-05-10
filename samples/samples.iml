@@ -9,5 +9,6 @@
     <orderEntry type="sourceFolder" forTests="false" />
     <orderEntry type="library" name="KotlinJavaRuntime" level="project" />
     <orderEntry type="module" module-name="distributed-monitor" />
+    <orderEntry type="library" name="zeromq.jeromq" level="project" />
   </component>
 </module>
