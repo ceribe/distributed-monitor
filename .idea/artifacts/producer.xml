@@ -1,9 +1,14 @@
 <component name="ArtifactManager">
-  <artifact type="jar" name="samples:jar">
-    <output-path>$PROJECT_DIR$/out/artifacts/samples_jar</output-path>
-    <root id="archive" name="samples.jar">
+  <artifact type="jar" name="producer">
+    <output-path>$PROJECT_DIR$/out/artifacts/samples</output-path>
+    <root id="archive" name="producer.jar">
+      <element id="directory" name="META-INF">
+        <element id="file-copy" path="$PROJECT_DIR$/samples/src/producer/META-INF/MANIFEST.MF" />
+      </element>
       <element id="module-output" name="samples" />
       <element id="module-output" name="distributed-monitor" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/zeromq/jeromq/0.5.2/jeromq-0.5.2.jar" path-in-jar="/" />
+      <element id="extracted-dir" path="$MAVEN_REPOSITORY$/eu/neilalexander/jnacl/1.0.0/jnacl-1.0.0.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/jetbrains/kotlin/kotlin-stdlib-jdk8/1.6.10/kotlin-stdlib-jdk8-1.6.10.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/jetbrains/kotlin/kotlin-stdlib/1.6.10/kotlin-stdlib-1.6.10.jar" path-in-jar="/" />
       <element id="extracted-dir" path="$MAVEN_REPOSITORY$/org/jetbrains/annotations/13.0/annotations-13.0.jar" path-in-jar="/" />

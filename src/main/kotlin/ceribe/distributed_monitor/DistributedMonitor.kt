@@ -1,10 +1,11 @@
 package ceribe.distributed_monitor
 
-class DistributedMonitor<T>(private val state: T) where T : State {
+// TODO Add a list of ips and ports of other nodes
+class DistributedMonitor<T>(private val state: T) where T : SerializableState {
 
     fun execute(block: T.() -> Unit) {
-        // TODO Get lock
+        // TODO Get lock and update state
         state.block()
-        // TODO Release lock
+        // TODO Release lock and send state to other nodes
     }
 }
