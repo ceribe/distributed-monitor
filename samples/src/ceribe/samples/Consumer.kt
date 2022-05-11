@@ -13,4 +13,6 @@ fun main(args: Array<String>) {
             }
         }
     }
+
+    monitor.die()
 }

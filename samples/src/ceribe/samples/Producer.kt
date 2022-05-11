@@ -10,4 +10,6 @@ fun main(args: Array<String>) {
             values.add(it)
         }
     }
+
+    monitor.die()
 }
