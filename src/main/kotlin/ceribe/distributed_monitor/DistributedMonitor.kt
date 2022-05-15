@@ -10,14 +10,14 @@ import kotlin.system.exitProcess
 class DistributedMonitor<T>(
     constructor: () -> T,
     private val canBeProcessed: (T) -> Boolean,
-    index: Int,
+    private val index: Int,
     addresses: List<String>,
     private val timeout: Long = 2000
 ) where T : SerializableState {
     private val state: T = constructor()
     private var token: Token? = null
     private val numberOfProcesses = addresses.size
-    private val rn: List<Int>
+    private val rn: MutableList<Int>
 
     private val lock = ReentrantLock()
     private val condition = lock.newCondition()
@@ -27,9 +27,9 @@ class DistributedMonitor<T>(
 
     init {
         if (index == 0) {
-            token = Token(mutableListOf(), List(numberOfProcesses) { 0 })
+            token = Token(mutableListOf(), MutableList(numberOfProcesses) { 0 })
         }
-        rn = List(numberOfProcesses) { 0 }
+        rn = MutableList(numberOfProcesses) { 0 }
 
         // Init publishing socket
         val context = ZMQ.context(1)
@@ -46,10 +46,18 @@ class DistributedMonitor<T>(
 
         thread(start = true) {
             val message = subSocket.recv()
-            if (message[0] == 0.toByte()) {
+            val firstInt = message.getInt(0)
+            if (firstInt == 0) {
                 // Request Message
-            } else {
+                val senderNumber = message.getInt(1)
+                val requestNumber = message.getInt(2)
+                rn[senderNumber-1] = maxOf(rn[senderNumber-1], requestNumber)
+            } else if (firstInt - 1 == index){
                 // Token Message
+                lock.withLock {
+                    processTokenMessage(message)
+                    condition.signal()
+                }
             }
         }
 
@@ -61,7 +69,9 @@ class DistributedMonitor<T>(
         var processed = false
         while (!processed) {
             if (token == null) {
-                //TODO send request to other nodes
+                //Send request message to all processes
+                rn[index]++
+                pubSocket.send(composeRequestMessage())
             }
             lock.withLock {
                 while (token == null) {
@@ -71,10 +81,18 @@ class DistributedMonitor<T>(
                     state.block()
                     processed = true
                 }
+                // TODO update queue
+                token!!.ln[index] = rn[index]
+                for (i in 0 until numberOfProcesses) {
+                    val isIndexInQueue = token!!.queue.contains(i)
+                    val isWaitingForCriticalSection = token!!.ln[i] + 1 == rn[i]
+                    if (!isIndexInQueue && isWaitingForCriticalSection) {
+                        token!!.queue.add(i)
+                    }
+                }
                 val nodeNumber = token!!.queue.removeFirstOrNull()
                 if (nodeNumber != null) {
-                    val messageToSend = serializeTokenMessage()
-                    // TODO Send token and state to node with nodeNumber
+                    pubSocket.send(composeTokenMessage(nodeNumber + 1))
                     token = null
                 }
             }
@@ -90,25 +108,30 @@ class DistributedMonitor<T>(
         exitProcess(0)
     }
 
+    private fun composeRequestMessage(): ByteArray {
+        return listOf(0, index + 1, rn[index]).toByteArray()
+    }
+
     /**
-     *  Returns serialized token and state
+     *  Returns a ByteArray containing processNumber, serialized token and serialized state.
      */
-    private fun serializeTokenMessage(): ByteArray {
+    private fun composeTokenMessage(processNumber: Int): ByteArray {
         token?.let {
-            return byteArrayOf(it.queue.size.toByte()) + it.queue.toByteArray() + it.ln.toByteArray() + state.serialize()
+            return processNumber.toByteArray() + it.serialize() + state.serialize()
         }
         throw NullPointerException("Token is null")
     }
 
     /**
-     * Returns deserialized token and updates monitor's state
+     * Reads given [message] and updates token and state.
      */
-    private fun deserializeTokenMessage(message: ByteArray): Token {
-        val queueSize = message[0].toInt()
-        val queue = message.sliceArray(1 until 1 + queueSize)
-        val ln = message.sliceArray(1 + queueSize until 1 + queueSize + numberOfProcesses)
-        val stateBytes = message.sliceArray(1 + queueSize + numberOfProcesses until message.size)
+    private fun processTokenMessage(message: ByteArray) {
+        token = Token()
+
+        val messageWithoutProcessNumber = message.copyOfRange(4, message.size)
+        val offset = token!!.deserialize(messageWithoutProcessNumber, numberOfProcesses)
+
+        val stateBytes = message.sliceArray(4 + offset until message.size)
         state.deserialize(stateBytes)
-        return Token(queue.toMutableList(), ln.toList())
     }
 }
