@@ -9,14 +9,15 @@ fun main(args: Array<String>) {
         index = 2,
         addresses = listOf("localhost:8001", "localhost:8002", "localhost:8003")
     )
-
+    var sum = 0
     repeat(100) {
         monitor.execute {
             val receivedValue = values.removeFirst()
+            sum += receivedValue
             println("Received value: $receivedValue")
         }
         Thread.sleep(50)
     }
-
+    println("Sum: $sum")
     monitor.die()
 }

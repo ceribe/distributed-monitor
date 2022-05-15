@@ -12,7 +12,8 @@ class DistributedMonitor<T>(
     private val canBeProcessed: (T) -> Boolean,
     private val index: Int,
     addresses: List<String>,
-    private val timeout: Long = 5000
+    private val startDelay: Long = 5000,
+    private val finishTimeout: Long = 2000
 ) where T : SerializableState {
     private val state: T = constructor()
     private var token: Token? = null
@@ -64,7 +65,7 @@ class DistributedMonitor<T>(
         }
 
         // Give other processes time to start
-        Thread.sleep(5000)
+        Thread.sleep(startDelay)
     }
 
     fun execute(block: T.() -> Unit) {
@@ -112,11 +113,11 @@ class DistributedMonitor<T>(
         thread(start = true) {
             while (token != null) {
                 updateQueueAndTryToSendToken()
-//                Thread.sleep(50)
+                Thread.sleep(50)
             }
         }
         if (token != null) {
-            Thread.sleep(5000)
+            Thread.sleep(finishTimeout)
         }
         exitProcess(0)
     }
