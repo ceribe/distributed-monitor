@@ -8,15 +8,11 @@ import kotlin.concurrent.withLock
 import kotlin.system.exitProcess
 
 /**
- * [canBeProcessed] - predicate that determines whether current state can be processed.
- *
- * [index] - index the process which uses this monitor.
- *
- * [addresses] - list of addresses of all processes.
- *
- * [startDelay] - amount of milliseconds that monitor will wait before executing the first task.
- *
- * [finishTimeout] - amount of milliseconds that monitor will wait for someone to request the token before dying.
+ * @param canBeProcessed predicate which determines whether current state can be processed
+ * @param index index of the process which uses this monitor
+ * @param addresses list of addresses of all processes
+ * @param startDelay amount of milliseconds that monitor will wait before executing the first task
+ * @param finishTimeout amount of milliseconds that monitor will wait after [die] is called before dying
  */
 class DistributedMonitor<T>(
     constructor: () -> T,
@@ -27,8 +23,10 @@ class DistributedMonitor<T>(
     private val finishTimeout: Long = 2000
 ) where T : SerializableState {
     private val state: T = constructor()
-    private var token: Token? = null
+
     private val numberOfProcesses = addresses.size
+
+    private var token: Token? = null
     private val rn: MutableList<Int>
 
     private val lock = ReentrantLock()
@@ -57,18 +55,20 @@ class DistributedMonitor<T>(
             subSocket.connect("tcp://$it")
         }
 
-        // Communication thread
+        startCommunicationThread()
+
+        // Give other processes time to start
+        Thread.sleep(startDelay)
+    }
+
+    private fun startCommunicationThread() {
         thread(start = true) {
             while (true) {
                 val message = subSocket.recv()
                 val firstInt = message.getInt(0)
                 if (firstInt == 0) {
-                    // Request Message
-                    val senderNumber = message.getInt(1)
-                    val requestNumber = message.getInt(2)
-                    rn[senderNumber - 1] = maxOf(rn[senderNumber - 1], requestNumber)
+                    processRequestMessage(message)
                 } else if (firstInt - 1 == index) {
-                    // Token Message
                     lock.withLock {
                         processTokenMessage(message)
                         condition.signalAll()
@@ -76,23 +76,19 @@ class DistributedMonitor<T>(
                 }
             }
         }
-
-        // Give other processes time to start
-        Thread.sleep(startDelay)
     }
 
     /**
      * Tries to execute given [task].
      * If [canBeProcessed] returns true, then [task] is executed.
-     * Otherwise, gives up token and requests it again.
+     * Otherwise, gives token up and requests it again.
      * Will try until it succeeds. After finishing [task] token will be sent to other process or
      * if queue is empty, token will stay in this monitor.
      */
     fun execute(task: T.() -> Unit) {
-        var processed = false
-        while (!processed) {
+        var executed = false
+        while (!executed) {
             if (token == null) {
-                //Send request message to all processes
                 rn[index]++
                 pubSocket.send(composeRequestMessage())
             }
@@ -102,13 +98,19 @@ class DistributedMonitor<T>(
                 }
                 if (canBeProcessed(state)) {
                     state.apply(task)
-                    processed = true
+                    executed = true
                 }
                 updateQueueAndTryToSendToken()
             }
         }
     }
 
+    /**
+     * Adds all processes which requested token to queue and
+     * sends it to first process in queue. If queue is empty,
+     * token stays in this monitor. Should only be called
+     * if this process holds token.
+     */
     private fun updateQueueAndTryToSendToken() {
         token!!.ln[index] = rn[index]
         for (i in 0 until numberOfProcesses) {
@@ -118,9 +120,9 @@ class DistributedMonitor<T>(
                 token!!.queue.add(i)
             }
         }
-        val nodeNumber = token!!.queue.removeFirstOrNull()
-        if (nodeNumber != null) {
-            pubSocket.send(composeTokenMessage(nodeNumber + 1))
+        val processIndex = token!!.queue.removeFirstOrNull()
+        if (processIndex != null) {
+            pubSocket.send(composeTokenMessage(processIndex + 1))
             token = null
         }
     }
@@ -142,7 +144,7 @@ class DistributedMonitor<T>(
     }
 
     /**
-     * Returns a ByteArray containing 0 this process's number and its request number.
+     * Returns a ByteArray containing 0, this process's number and its request number.
      */
     private fun composeRequestMessage(): ByteArray {
         return listOf(0, index + 1, rn[index]).toByteArray()
@@ -156,6 +158,15 @@ class DistributedMonitor<T>(
             return processNumber.toByteArray() + it.serialize() + state.serialize()
         }
         throw NullPointerException("Token is null")
+    }
+
+    /**
+     * Reads given [message] and updates rn list.
+     */
+    private fun processRequestMessage(message: ByteArray) {
+        val senderNumber = message.getInt(1)
+        val requestNumber = message.getInt(2)
+        rn[senderNumber - 1] = maxOf(rn[senderNumber - 1], requestNumber)
     }
 
     /**

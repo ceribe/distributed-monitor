@@ -7,7 +7,7 @@ fun main(args: Array<String>) {
         ::IntList,
         canBeProcessed = { it.values.size < 5 },
         index = 0,
-        addresses = listOf("localhost:8001", "localhost:8002", "localhost:8003")
+        addresses = addresses
     )
 
     (1..200).forEach {

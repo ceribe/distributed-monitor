@@ -7,7 +7,7 @@ fun main(args: Array<String>) {
         ::IntList,
         canBeProcessed = { it.values.isNotEmpty() },
         index = 1,
-        addresses = listOf("localhost:8001", "localhost:8002", "localhost:8003")
+        addresses = addresses
     )
     var sum = 0
     repeat(100) {

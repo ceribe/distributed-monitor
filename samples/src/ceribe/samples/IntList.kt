@@ -4,6 +4,9 @@ import ceribe.distributed_monitor.SerializableState
 import ceribe.distributed_monitor.toByteArray
 import ceribe.distributed_monitor.toList
 
+/**
+ * Example state class implementing [SerializableState].
+ */
 class IntList : SerializableState {
     val values = mutableListOf<Int>()
 
