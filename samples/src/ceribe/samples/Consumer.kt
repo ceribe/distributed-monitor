@@ -6,7 +6,7 @@ fun main(args: Array<String>) {
     val monitor = DistributedMonitor(
         ::IntList,
         canBeProcessed = { it.values.isNotEmpty() },
-        index = 2,
+        index = 1,
         addresses = listOf("localhost:8001", "localhost:8002", "localhost:8003")
     )
 
