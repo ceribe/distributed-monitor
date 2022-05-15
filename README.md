@@ -36,7 +36,7 @@ class SomeState : SerializableState {
 val monitor = DistributedMonitor(
   ::SomeState,  // Constructor of class which implements SerializableState interface
   canBeProcessed = { true }, // Lambda which tells monitor whether given state can be processed by this process
-  index = 0, // This process index
+  index = 0, // This process's index
   addresses = listOf("localhost:8001", "localhost:8002", "localhost:8003") // Adresses of all processes which will work together
 )
 ```
