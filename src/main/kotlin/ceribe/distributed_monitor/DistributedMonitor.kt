@@ -38,6 +38,7 @@ class DistributedMonitor<T>(
     private val subSocket: ZMQ.Socket
 
     init {
+        // Init Suzuki-Kasami algorithm
         if (index == 0) {
             token = Token(mutableListOf(), MutableList(numberOfProcesses) { 0 })
         }
@@ -56,6 +57,7 @@ class DistributedMonitor<T>(
             subSocket.connect("tcp://$it")
         }
 
+        // Communication thread
         thread(start = true) {
             while (true) {
                 val message = subSocket.recv()
@@ -79,7 +81,14 @@ class DistributedMonitor<T>(
         Thread.sleep(startDelay)
     }
 
-    fun execute(block: T.() -> Unit) {
+    /**
+     * Tries to execute given [task].
+     * If [canBeProcessed] returns true, then [task] is executed.
+     * Otherwise, gives up token and requests it again.
+     * Will try until it succeeds. After finishing [task] token will be sent to other process or
+     * if queue is empty, token will stay in this monitor.
+     */
+    fun execute(task: T.() -> Unit) {
         var processed = false
         while (!processed) {
             if (token == null) {
@@ -92,7 +101,7 @@ class DistributedMonitor<T>(
                     condition.await()
                 }
                 if (canBeProcessed(state)) {
-                    state.block()
+                    state.apply(task)
                     processed = true
                 }
                 updateQueueAndTryToSendToken()
@@ -116,7 +125,6 @@ class DistributedMonitor<T>(
         }
     }
 
-    // TODO maybe pack it into some lambda so API is cleaner
     /**
      * Waits until someone requests the token and sends it. After timeout dies forcibly.
      */
@@ -133,6 +141,9 @@ class DistributedMonitor<T>(
         exitProcess(0)
     }
 
+    /**
+     * Returns a ByteArray containing 0 this process's number and its request number.
+     */
     private fun composeRequestMessage(): ByteArray {
         return listOf(0, index + 1, rn[index]).toByteArray()
     }
