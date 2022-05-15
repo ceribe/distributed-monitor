@@ -18,8 +18,14 @@ data class Token(var queue: MutableList<Int> = mutableListOf(), var ln: MutableL
      */
     fun deserialize(data: ByteArray, numberOfProcesses: Int): Int {
         val queueSize = data.getInt(0)
-        queue = data.sliceArray(4 until 4 + queueSize).toList().toMutableList()
-        ln = data.sliceArray(4 + queueSize until 4 + queueSize + numberOfProcesses).toList().toMutableList()
-        return 4 + queueSize + numberOfProcesses
+        var offset = 4
+
+        queue = data.sliceArray( offset until offset + queueSize * 4).toList().toMutableList()
+        offset += queueSize * 4
+
+        ln = data.sliceArray(offset until offset + numberOfProcesses * 4).toList().toMutableList()
+        offset += numberOfProcesses * 4
+
+        return offset
     }
 }

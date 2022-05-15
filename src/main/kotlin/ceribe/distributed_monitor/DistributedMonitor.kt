@@ -45,18 +45,20 @@ class DistributedMonitor<T>(
         }
 
         thread(start = true) {
-            val message = subSocket.recv()
-            val firstInt = message.getInt(0)
-            if (firstInt == 0) {
-                // Request Message
-                val senderNumber = message.getInt(1)
-                val requestNumber = message.getInt(2)
-                rn[senderNumber-1] = maxOf(rn[senderNumber-1], requestNumber)
-            } else if (firstInt - 1 == index){
-                // Token Message
-                lock.withLock {
-                    processTokenMessage(message)
-                    condition.signal()
+            while (true) {
+                val message = subSocket.recv()
+                val firstInt = message.getInt(0)
+                if (firstInt == 0) {
+                    // Request Message
+                    val senderNumber = message.getInt(1)
+                    val requestNumber = message.getInt(2)
+                    rn[senderNumber - 1] = maxOf(rn[senderNumber - 1], requestNumber)
+                } else if (firstInt - 1 == index) {
+                    // Token Message
+                    lock.withLock {
+                        processTokenMessage(message)
+                        condition.signal()
+                    }
                 }
             }
         }
@@ -81,7 +83,7 @@ class DistributedMonitor<T>(
                     state.block()
                     processed = true
                 }
-                // TODO update queue
+
                 token!!.ln[index] = rn[index]
                 for (i in 0 until numberOfProcesses) {
                     val isIndexInQueue = token!!.queue.contains(i)

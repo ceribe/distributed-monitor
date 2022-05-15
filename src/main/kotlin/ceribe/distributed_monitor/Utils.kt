@@ -24,10 +24,10 @@ fun ByteArray.toList(): List<Int> {
 }
 
 fun ByteArray.getInt(index: Int): Int {
-    val b1 = this[index].toInt() and 0xff
-    val b2 = this[index + 1].toInt() and 0xff
-    val b3 = this[index + 2].toInt() and 0xff
-    val b4 = this[index + 3].toInt() and 0xff
+    val b1 = this[index * 4].toInt() and 0xff
+    val b2 = this[index * 4 + 1].toInt() and 0xff
+    val b3 = this[index * 4 + 2].toInt() and 0xff
+    val b4 = this[index * 4 + 3].toInt() and 0xff
     return b1 shl 24 or (b2 shl 16) or (b3 shl 8) or b4
 }
 

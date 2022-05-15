@@ -8,12 +8,13 @@ fun main(args: Array<String>) {
         ::IntList,
         canBeProcessed = { it.values.size < 10 },
         index = 0,
-        addresses = listOf("localhost:8001", "localhost:8002")
+        addresses = listOf("localhost:8001", "localhost:8002", "localhost:8003")
     )
 
-    (1..100).forEach {
+    (1..200).forEach {
         monitor.execute {
             values.add(it)
+            println("Produced value: $it")
         }
     }
 
