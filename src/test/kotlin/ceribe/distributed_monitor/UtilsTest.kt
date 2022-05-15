@@ -18,10 +18,8 @@ internal class UtilsTest {
     fun `should get proper int`() {
         val intList = listOf(1, 2, 3, 4, 5)
         val intListConvertedToByteArray = intList.toByteArray()
-        with (intListConvertedToByteArray) {
-            for (i in intList.indices) {
-                assertEquals(intList[i], getInt(i))
-            }
+        for (i in intList.indices) {
+            assertEquals(intList[i], intListConvertedToByteArray.getInt(i))
         }
     }
 
