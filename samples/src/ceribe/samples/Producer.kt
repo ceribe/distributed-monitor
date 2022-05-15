@@ -1,7 +1,6 @@
 package ceribe.samples
 
 import ceribe.distributed_monitor.DistributedMonitor
-import kotlin.concurrent.thread
 
 fun main(args: Array<String>) {
     val monitor = DistributedMonitor(

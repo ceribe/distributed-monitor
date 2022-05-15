@@ -7,6 +7,17 @@ import kotlin.concurrent.thread
 import kotlin.concurrent.withLock
 import kotlin.system.exitProcess
 
+/**
+ * [canBeProcessed] - predicate that determines whether current state can be processed.
+ *
+ * [index] - index the process which uses this monitor.
+ *
+ * [addresses] - list of addresses of all processes.
+ *
+ * [startDelay] - amount of milliseconds that monitor will wait before executing the first task.
+ *
+ * [finishTimeout] - amount of milliseconds that monitor will wait for someone to request the token before dying.
+ */
 class DistributedMonitor<T>(
     constructor: () -> T,
     private val canBeProcessed: (T) -> Boolean,
