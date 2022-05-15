@@ -1,17 +1,18 @@
 package ceribe.samples
 
 import ceribe.distributed_monitor.SerializableState
+import ceribe.distributed_monitor.toByteArray
+import ceribe.distributed_monitor.toList
 
 class IntList : SerializableState {
     val values = mutableListOf<Int>()
 
     override fun serialize(): ByteArray {
-        return values.joinToString(",").toByteArray()
+        return values.toList().toByteArray()
     }
 
     override fun deserialize(data: ByteArray) {
-        val decodedString = String(data)
-        val newValues = decodedString.split(",").map { it.toInt() }
+        val newValues = data.toList()
         values.clear()
         values.addAll(newValues)
     }

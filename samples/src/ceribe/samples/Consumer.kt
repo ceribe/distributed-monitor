@@ -12,11 +12,10 @@ fun main(args: Array<String>) {
 
     repeat(100) {
         monitor.execute {
-            if (values.isNotEmpty()) {
-                val receivedValue = values.removeFirst()
-                println("Received value: $receivedValue")
-            }
+            val receivedValue = values.removeFirst()
+            println("Received value: $receivedValue")
         }
+        Thread.sleep(50)
     }
 
     monitor.die()

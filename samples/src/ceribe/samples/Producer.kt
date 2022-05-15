@@ -6,7 +6,7 @@ import kotlin.concurrent.thread
 fun main(args: Array<String>) {
     val monitor = DistributedMonitor(
         ::IntList,
-        canBeProcessed = { it.values.size < 10 },
+        canBeProcessed = { it.values.size < 5 },
         index = 0,
         addresses = listOf("localhost:8001", "localhost:8002", "localhost:8003")
     )

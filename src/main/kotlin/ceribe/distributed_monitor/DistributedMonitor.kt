@@ -12,7 +12,7 @@ class DistributedMonitor<T>(
     private val canBeProcessed: (T) -> Boolean,
     private val index: Int,
     addresses: List<String>,
-    private val timeout: Long = 2000
+    private val timeout: Long = 5000
 ) where T : SerializableState {
     private val state: T = constructor()
     private var token: Token? = null
@@ -57,14 +57,14 @@ class DistributedMonitor<T>(
                     // Token Message
                     lock.withLock {
                         processTokenMessage(message)
-                        condition.signal()
+                        condition.signalAll()
                     }
                 }
             }
         }
 
         // Give other processes time to start
-        Thread.sleep(10000)
+        Thread.sleep(5000)
     }
 
     fun execute(block: T.() -> Unit) {
@@ -83,21 +83,24 @@ class DistributedMonitor<T>(
                     state.block()
                     processed = true
                 }
-
-                token!!.ln[index] = rn[index]
-                for (i in 0 until numberOfProcesses) {
-                    val isIndexInQueue = token!!.queue.contains(i)
-                    val isWaitingForCriticalSection = token!!.ln[i] + 1 == rn[i]
-                    if (!isIndexInQueue && isWaitingForCriticalSection) {
-                        token!!.queue.add(i)
-                    }
-                }
-                val nodeNumber = token!!.queue.removeFirstOrNull()
-                if (nodeNumber != null) {
-                    pubSocket.send(composeTokenMessage(nodeNumber + 1))
-                    token = null
-                }
+                updateQueueAndTryToSendToken()
             }
+        }
+    }
+
+    private fun updateQueueAndTryToSendToken() {
+        token!!.ln[index] = rn[index]
+        for (i in 0 until numberOfProcesses) {
+            val isIndexInQueue = token!!.queue.contains(i)
+            val isWaitingForCriticalSection = token!!.ln[i] + 1 == rn[i]
+            if (!isIndexInQueue && isWaitingForCriticalSection) {
+                token!!.queue.add(i)
+            }
+        }
+        val nodeNumber = token!!.queue.removeFirstOrNull()
+        if (nodeNumber != null) {
+            pubSocket.send(composeTokenMessage(nodeNumber + 1))
+            token = null
         }
     }
 
@@ -106,7 +109,15 @@ class DistributedMonitor<T>(
      * Waits until someone requests the token and sends it. After timeout dies forcibly.
      */
     fun die() {
-        Thread.sleep(timeout)
+        thread(start = true) {
+            while (token != null) {
+                updateQueueAndTryToSendToken()
+//                Thread.sleep(50)
+            }
+        }
+        if (token != null) {
+            Thread.sleep(5000)
+        }
         exitProcess(0)
     }
 
