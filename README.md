@@ -1,6 +1,6 @@
 # Distributed Monitor
 
-Distributed Monitor is a tool which makes it possible to execute tasks in a distributed system while keeping a synchronized state shared between
+Distributed Monitor is a tool which makes it possible to execute atomic tasks in a distributed system while keeping a synchronized state shared between
 all working processes. This implementation uses [Suzuki-Kasami Algorithm](https://www.geeksforgeeks.org/suzuki-kasami-algorithm-for-mutual-exclusion-in-distributed-system/) to achieve mutual exclusion and extends it to share some kind of state.
 
 ## How to use
