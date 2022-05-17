@@ -157,3 +157,7 @@ fun main(args: Array<String>) {
     monitor.die()
 }
 ```
+
+### How to run
+
+To run the example program open the project in Intellij IDEA, build all artifacts and run all of them (eg. one jar in each terminal)
