@@ -126,7 +126,7 @@ fun main(args: Array<String>) {
     (1..100).forEach {
         monitor.execute {
             values.add(it)
-            println("Produced value: $it")
+            println("Sent $it")
         }
     }
 
@@ -149,7 +149,7 @@ fun main(args: Array<String>) {
         monitor.execute {
             val receivedValue = values.removeFirst()
             sum += receivedValue
-            println("Received value: $receivedValue")
+            println("Received $receivedValue")
         }
         Thread.sleep(50)
     }
