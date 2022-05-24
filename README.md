@@ -112,6 +112,8 @@ class IntList : SerializableState {
 }
 ```
 
+"toByteArray" and "toList" used above are implemented be me in Utils.kt
+
 ### Producer
 
 ```kotlin
