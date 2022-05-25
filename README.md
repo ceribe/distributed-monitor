@@ -120,7 +120,7 @@ class IntList : SerializableState {
 fun main(args: Array<String>) {
     val monitor = DistributedMonitor(
         ::IntList,
-        canBeProcessed = { it.values.size < 5 },
+        canBeProcessed = { values.size < 5 },
         index = 0,
         addresses = listOf("localhost:8001", "localhost:8002")
     )
@@ -142,7 +142,7 @@ fun main(args: Array<String>) {
 fun main(args: Array<String>) {
     val monitor = DistributedMonitor(
         ::IntList,
-        canBeProcessed = { it.values.isNotEmpty() },
+        canBeProcessed = { values.isNotEmpty() },
         index = 1,
         addresses = listOf("localhost:8001", "localhost:8002")
     )
