@@ -5,7 +5,7 @@ import ceribe.distributed_monitor.DistributedMonitor
 fun main(args: Array<String>) {
     val monitor = DistributedMonitor(
         ::IntList,
-        canBeProcessed = { it.values.isNotEmpty() },
+        canBeProcessed = { values.isNotEmpty() },
         index = 1,
         addresses = addresses
     )

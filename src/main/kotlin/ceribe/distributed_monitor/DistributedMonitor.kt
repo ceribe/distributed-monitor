@@ -16,7 +16,7 @@ import kotlin.system.exitProcess
  */
 class DistributedMonitor<T>(
     constructor: () -> T,
-    private val canBeProcessed: (T) -> Boolean,
+    private val canBeProcessed: T.() -> Boolean,
     private val index: Int,
     addresses: List<String>,
     private val startDelay: Long = 5000,
@@ -96,7 +96,7 @@ class DistributedMonitor<T>(
                 while (token == null) {
                     condition.await()
                 }
-                if (canBeProcessed(state)) {
+                if (state.canBeProcessed()) {
                     state.apply(task)
                     executed = true
                 }
