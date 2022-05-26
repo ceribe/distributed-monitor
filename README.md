@@ -73,7 +73,7 @@ or else monitor won't work. If 5000ms is not enough, pass a different "startDela
 ### Request Message
 | Bytes  | Content                 |
 | ------ | ----------------------- |
-| 0 - 3  | Type - Broadcast        |
+| 0 - 3  | Type / 0 (Broadcast)    |
 | 4 - 7  | Sender's process number |
 | 8 - 11 | Sender's RN             |
 
