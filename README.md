@@ -117,7 +117,7 @@ class IntList : SerializableState {
 }
 ```
 
-"toByteArray" and "toList" used above are implemented be me in Utils.kt
+"toByteArray" and "toList" used above are implemented be me in [Utils.kt](https://github.com/ceribe/distributed-monitor/blob/main/src/main/kotlin/ceribe/distributed_monitor/Utils.kt).
 
 ### Producer
 
