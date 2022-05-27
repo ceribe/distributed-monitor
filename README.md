@@ -76,22 +76,24 @@ or else monitor won't work. If 5000ms is not enough, pass a different "startDela
 ### Request Message
 | Bytes  | Content                 |
 | ------ | ----------------------- |
-| 0 - 3  | Type - Broadcast        |
+| 0 - 3  | Type / 0 (Broadcast)    |
 | 4 - 7  | Sender's process number |
 | 8 - 11 | Sender's RN             |
 
 ### Token Message
-| Bytes   | Content                          |
-| ------- | -------------------------------- |
-| 0 - 3   | Type / Recepient's proces number |
-| 4 - 7   | Queue size                       |
-| 8 - n   | Queue                            |
-| n+1 - m | LN                               |
-| m+1 - o | Serialized state                 |
+| Bytes   | Content                           |
+| ------- | --------------------------------- |
+| 0 - 3   | Type / Recepient's proces number  |
+| 4 - 7   | Queue size (number of 32bit ints) |
+| 8 - n   | Queue                             |
+| n+1 - m | LN                                |
+| m+1 - o | Serialized state                  |
 
 Because process numbers start from 1 it is easy to tell which type of message just arrived.
 Queue can have different size each time so the number of bytes needed for it are stored as "Queue size".
 Size of "LN" is the number of processes. Serialized state's size should not matter for the protocol.
+Queue and "LN" are serialized as a list o bytes so to deserialize them to list of ints, 4 times as much
+elements should be read. If this explanation is not enough check [Token.kt](https://github.com/ceribe/distributed-monitor/blob/main/src/main/kotlin/ceribe/distributed_monitor/Token.kt).
 
 ## Example program
 
