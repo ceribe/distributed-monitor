@@ -125,13 +125,12 @@ class IntList : SerializableState {
 fun main(args: Array<String>) {
     val monitor = DistributedMonitor(
         ::IntList,
-        canBeProcessed = { values.size < 5 },
         index = 0,
         addresses = listOf("localhost:8001", "localhost:8002")
     )
 
     (1..100).forEach {
-        monitor.execute {
+        monitor.execute({ values.size < 5 }) {
             values.add(it)
             println("Sent $it")
         }
@@ -147,13 +146,12 @@ fun main(args: Array<String>) {
 fun main(args: Array<String>) {
     val monitor = DistributedMonitor(
         ::IntList,
-        canBeProcessed = { values.isNotEmpty() },
         index = 1,
         addresses = listOf("localhost:8001", "localhost:8002")
     )
     var sum = 0
     repeat(100) {
-        monitor.execute {
+        monitor.execute({ values.isNotEmpty() }) {
             val receivedValue = values.removeFirst()
             sum += receivedValue
             println("Received $receivedValue")
