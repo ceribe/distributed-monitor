@@ -8,7 +8,6 @@ import kotlin.concurrent.withLock
 import kotlin.system.exitProcess
 
 /**
- * @param canBeProcessed predicate which determines whether current state can be processed
  * @param index index of the process which uses this monitor
  * @param addresses list of addresses of all processes
  * @param startDelay amount of milliseconds that monitor will wait before executing the first task
@@ -16,7 +15,6 @@ import kotlin.system.exitProcess
  */
 class DistributedMonitor<T>(
     constructor: () -> T,
-    private val canBeProcessed: T.() -> Boolean,
     private val index: Int,
     addresses: List<String>,
     private val startDelay: Long = 5000,
@@ -80,12 +78,12 @@ class DistributedMonitor<T>(
 
     /**
      * Tries to execute given [task].
-     * If [canBeProcessed] returns true, then [task] is executed.
+     * If [canTaskBeExecuted] returns true, then [task] is executed.
      * Otherwise, gives token up and requests it again.
      * Will try until it succeeds. After finishing [task] token will be sent to other process or
      * if queue is empty, token will stay in this monitor.
      */
-    fun execute(task: T.() -> Unit) {
+    fun execute(canTaskBeExecuted: T.() -> Boolean, task: T.() -> Unit) {
         var executed = false
         while (!executed) {
             if (token == null) {
@@ -96,7 +94,7 @@ class DistributedMonitor<T>(
                 while (token == null) {
                     condition.await()
                 }
-                if (state.canBeProcessed()) {
+                if (state.canTaskBeExecuted()) {
                     state.apply(task)
                     executed = true
                 }

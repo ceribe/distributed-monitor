@@ -35,7 +35,6 @@ class SomeState : SerializableState {
 ```kotlin
 val monitor = DistributedMonitor(
   ::SomeState,  // Constructor of class which implements SerializableState interface
-  canBeProcessed = { true }, // Lambda which tells monitor whether given state can be processed by this process
   index = 0, // This process's index
   addresses = listOf("localhost:8001", "localhost:8002", "localhost:8003") // Adresses of all processes which will work together
 )
@@ -44,12 +43,16 @@ val monitor = DistributedMonitor(
 ### 4. Implement program logic
 
 ```kotlin
-monitor.execute {
-  TODO() // Code to be executed inside critical section
+monitor.execute({ true }) { 
+    // Code to be executed inside critical section
 }
 ```
 
-You can think of "monitor.execute { ... }" as a distributed version of "synchronized(...) { ... }".
+First parameter passed to "execute" is a predicate using which monitor can tell
+whether given state is processable. If it can be processed then task is executed. If
+not then token is given up and requested again.
+
+You can think of "monitor.execute(...) { ... }" as a distributed version of "synchronized(...) { ... }".
 
 Additionaly "monitor.execute" brings given state class into scope.
 
@@ -59,7 +62,7 @@ Additionaly "monitor.execute" brings given state class into scope.
 monitor.die()
 ```
 
-It is important to call this function after finishing. Thank to this monitor will be able to send
+It is important to call this function after finishing. Thanks to this monitor will be able to send
 the token to some process which requested it. This assumes that some other process will request token in at most
 2000ms after this process finishes work. If 2000ms is not enough, pass a different "finishTimeout" to monitor's constructor.
 
