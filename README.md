@@ -68,7 +68,7 @@ the token to some process which requested it. This assumes that some other proce
 
 ### 6. Run
 
-After implementing logic of your program(s) run them. Remember to start all processes in at most 5000ms after starting the first process
+Remember to start all processes in at most 5000ms after starting the first process
 or else monitor won't work. If 5000ms is not enough, pass a different "startDelay" to monitor's constructor.
 
 ## Communication protocol
