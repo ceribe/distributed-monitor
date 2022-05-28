@@ -165,4 +165,4 @@ fun main(args: Array<String>) {
 
 ### How to run
 
-To run the example program open the project in Intellij IDEA, build all artifacts and run all of them (eg. one jar in each terminal)
+To run the example program open the project in Intellij IDEA, build all artifacts and run them (eg. each jar in a separate terminal).
