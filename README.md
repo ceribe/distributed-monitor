@@ -48,7 +48,7 @@ monitor.execute({ true }) {
 }
 ```
 
-First parameter passed to "execute" is a predicate using which monitor can tell
+First parameter passed to "execute" is a predicate which monitor uses to determine 
 whether given state is processable. If it can be processed then task is executed. If
 not then token is given up and requested again.
 
