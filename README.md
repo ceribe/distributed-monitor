@@ -3,7 +3,7 @@
 Distributed Monitor is a tool which makes it possible to execute atomic tasks in a distributed system while keeping a synchronized state shared between
 all working processes. This implementation uses [Suzuki-Kasami Algorithm](https://www.geeksforgeeks.org/suzuki-kasami-algorithm-for-mutual-exclusion-in-distributed-system/) to achieve mutual exclusion and extends it to share some kind of state.
 
-## How to use
+# How to use
 
 ### 1. Add distributed-monitor module to your project
 Either copy the files or link the module.
@@ -71,33 +71,7 @@ the token to some process which requested it. This assumes that some other proce
 Remember to start all processes in at most 5000ms after starting the first process
 or else monitor won't work. If 5000ms is not enough, pass a different "startDelay" to monitor's constructor.
 
-## Communication protocol
-
-### Request Message
-
-| 4 bytes              | 4 bytes                 | 4 bytes     |
-| -------------------- | ----------------------- | ----------- |
-| Type = 0 (Broadcast) | Sender's process number | Sender's RN |
-
-### Token Message
-
-| 4 bytes                          | 4 bytes    | n bytes | m bytes | k bytes          |
-| -------------------------------- | ---------- | ------- | ------- | ---------------- |
-| Type = Recepient's proces number | Queue size | Queue   | LN      | Serialized state |
-
-Because process numbers start from 1 it is easy to tell which type of message just arrived.
-Queue can have different size each time so:
-```
-n = queue_size * 4
-```
-LN's size is based on the number of used processes so:
-```
-m = number_of_processes * 4
-```
-Remaining k bytes store serialized state.
-If this explanation is not enough check [Token.kt](https://github.com/ceribe/distributed-monitor/blob/main/src/main/kotlin/ceribe/distributed_monitor/Token.kt).
-
-## Example program
+# Example program
 
 Program listed below is the classic Producer/Consumer problem in which one process creates resources and other consumes them.
 
@@ -168,3 +142,29 @@ fun main(args: Array<String>) {
 ### How to run
 
 To run the example program open the project in Intellij IDEA, build all artifacts and run them (eg. each jar in a separate terminal).
+
+# Communication protocol
+
+### Request Message
+
+| 4 bytes              | 4 bytes                 | 4 bytes     |
+| -------------------- | ----------------------- | ----------- |
+| Type = 0 (Broadcast) | Sender's process number | Sender's RN |
+
+### Token Message
+
+| 4 bytes                          | 4 bytes    | n bytes | m bytes | k bytes          |
+| -------------------------------- | ---------- | ------- | ------- | ---------------- |
+| Type = Recepient's proces number | Queue size | Queue   | LN      | Serialized state |
+
+Because process numbers start from 1 it is easy to tell which type of message just arrived.
+Queue can have different size each time so:
+```
+n = queue_size * 4
+```
+LN's size is based on the number of used processes so:
+```
+m = number_of_processes * 4
+```
+Remaining k bytes store serialized state.
+If this explanation is not enough check [Token.kt](https://github.com/ceribe/distributed-monitor/blob/main/src/main/kotlin/ceribe/distributed_monitor/Token.kt).
