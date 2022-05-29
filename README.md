@@ -74,26 +74,28 @@ or else monitor won't work. If 5000ms is not enough, pass a different "startDela
 ## Communication protocol
 
 ### Request Message
-| Bytes  | Content                 |
-| ------ | ----------------------- |
-| 0 - 3  | Type / 0 (Broadcast)    |
-| 4 - 7  | Sender's process number |
-| 8 - 11 | Sender's RN             |
+
+| 4 bytes              | 4 bytes                 | 4 bytes     |
+| -------------------- | ----------------------- | ----------- |
+| Type = 0 (Broadcast) | Sender's process number | Sender's RN |
 
 ### Token Message
-| Bytes   | Content                           |
-| ------- | --------------------------------- |
-| 0 - 3   | Type / Recepient's proces number  |
-| 4 - 7   | Queue size (number of 32bit ints) |
-| 8 - n   | Queue                             |
-| n+1 - m | LN                                |
-| m+1 - o | Serialized state                  |
+
+| 4 bytes                          | 4 bytes    | n bytes | m bytes | k bytes          |
+| -------------------------------- | ---------- | ------- | ------- | ---------------- |
+| Type = Recepient's proces number | Queue size | Queue   | LN      | Serialized state |
 
 Because process numbers start from 1 it is easy to tell which type of message just arrived.
-Queue can have different size each time so the number of bytes needed for it are stored as "Queue size".
-Size of "LN" is the number of processes. Serialized state's size should not matter for the protocol.
-Queue and "LN" are serialized as a list o bytes so to deserialize them to list of ints, 4 times as much
-elements should be read. If this explanation is not enough check [Token.kt](https://github.com/ceribe/distributed-monitor/blob/main/src/main/kotlin/ceribe/distributed_monitor/Token.kt).
+Queue can have different size each time so:
+```
+n = queue_size * 4
+```
+LN's size is based on the number of used processes so:
+```
+m = number_of_processes * 4
+```
+Remaining k bytes store serialized state.
+If this explanation is not enough check [Token.kt](https://github.com/ceribe/distributed-monitor/blob/main/src/main/kotlin/ceribe/distributed_monitor/Token.kt).
 
 ## Example program
 
