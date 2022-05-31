@@ -52,7 +52,7 @@ First parameter passed to "execute" is a predicate which monitor uses to determi
 whether given state is processable. If it can be processed then task is executed. If
 not then token is given up and requested again.
 
-You can think of "monitor.execute(...) { ... }" as a distributed version of "synchronized(...) { ... }".
+You can think of "monitor.execute { ... }" as a distributed version of "synchronized { ... }".
 
 Additionaly "monitor.execute" brings given state class into scope.
 
