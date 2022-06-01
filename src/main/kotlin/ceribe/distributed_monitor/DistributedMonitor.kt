@@ -5,7 +5,6 @@ import org.zeromq.ZMQ
 import java.util.concurrent.locks.ReentrantLock
 import kotlin.concurrent.thread
 import kotlin.concurrent.withLock
-import kotlin.system.exitProcess
 
 /**
  * @param index index of the process which uses this monitor
@@ -32,6 +31,8 @@ class DistributedMonitor<T>(
 
     private val pubSocket: ZMQ.Socket
     private val subSocket: ZMQ.Socket
+
+    private lateinit var communicationThread: Thread
 
     init {
         // Init Suzuki-Kasami algorithm
@@ -60,7 +61,7 @@ class DistributedMonitor<T>(
     }
 
     private fun startCommunicationThread() {
-        thread(start = true) {
+        communicationThread = thread(start = true) {
             while (true) {
                 val message = subSocket.recv()
                 val firstInt = message.getInt(0)
@@ -126,19 +127,19 @@ class DistributedMonitor<T>(
     }
 
     /**
-     * Waits until someone requests the token and sends it. After timeout dies forcibly.
+     * Waits until someone requests the token and sends it. After timeout communication thread dies forcibly.
+     * Monitor should not be used after calling this method.
      */
     fun die() {
-        thread(start = true) {
-            while (token != null) {
-                updateQueueAndTryToSendToken()
-                Thread.sleep(50)
-            }
+        var remainingTimeout = finishTimeout
+        while (token != null && remainingTimeout > 0) {
+            updateQueueAndTryToSendToken()
+            Thread.sleep(50)
+            remainingTimeout -= 50
         }
-        if (token != null) {
-            Thread.sleep(finishTimeout)
-        }
-        exitProcess(0)
+
+        communicationThread.setUncaughtExceptionHandler { _: Thread, _: Throwable -> }
+        communicationThread.interrupt()
     }
 
     /**
