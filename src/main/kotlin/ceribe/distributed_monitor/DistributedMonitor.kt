@@ -113,15 +113,15 @@ class DistributedMonitor<T>(
     private fun updateQueueAndTryToSendToken() {
         token!!.ln[index] = rn[index]
         for (i in 0 until numberOfProcesses) {
-            val isIndexInQueue = token!!.queue.contains(i)
+            val isIndexInQueue = token!!.queue.contains(i+1)
             val isWaitingForCriticalSection = token!!.ln[i] + 1 == rn[i]
             if (!isIndexInQueue && isWaitingForCriticalSection) {
-                token!!.queue.add(i)
+                token!!.queue.add(i+1)
             }
         }
-        val processIndex = token!!.queue.removeFirstOrNull()
-        if (processIndex != null) {
-            pubSocket.send(composeTokenMessage(processIndex + 1))
+        val processNumber = token!!.queue.removeFirstOrNull()
+        if (processNumber != null) {
+            pubSocket.send(composeTokenMessage(processNumber))
             token = null
         }
     }
