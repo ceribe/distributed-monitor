@@ -43,7 +43,7 @@ val monitor = DistributedMonitor(
 ### 4. Implement program logic
 
 ```kotlin
-monitor.execute({ true }) { 
+monitor.execute({ ... }) { 
     // Code to be executed inside critical section
 }
 ```
@@ -54,7 +54,7 @@ not then token is given up and requested again.
 
 You can think of "monitor.execute { ... }" as a distributed version of "synchronized { ... }".
 
-Additionaly "monitor.execute" brings given state class into scope.
+Additionally, "monitor.execute" brings given state class into scope.
 
 ### 5. After work with monitor is done clean up 
 

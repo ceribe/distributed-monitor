@@ -84,7 +84,7 @@ class DistributedMonitor<T>(
      * Will try until it succeeds. After finishing [task] token will be sent to other process or
      * if queue is empty, token will stay in this monitor.
      */
-    fun execute(canTaskBeExecuted: T.() -> Boolean, task: T.() -> Unit) {
+    fun execute(canTaskBeExecuted: T.() -> Boolean = { true }, task: T.() -> Unit) {
         var executed = false
         while (!executed) {
             if (token == null) {
