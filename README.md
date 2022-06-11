@@ -43,7 +43,7 @@ val monitor = DistributedMonitor(
 ### 4. Implement program logic
 
 ```kotlin
-monitor.execute({ ... }) { 
+monitor.execute({ /* Condition */ }) { 
     // Code to be executed inside critical section
 }
 ```
